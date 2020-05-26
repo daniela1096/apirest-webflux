@@ -6,6 +6,8 @@ import com.ddl.springboot.webflux.springbootwebfluxapirest.models.services.Produ
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -17,7 +19,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.util.Collections;
 import java.util.List;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+//@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureWebTestClient
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class SpringBootWebfluxApirestApplicationTests {
 
 	@Autowired
@@ -26,11 +30,14 @@ class SpringBootWebfluxApirestApplicationTests {
 	@Autowired
 	ProductoService service;
 
+	@Value("${config.base.endpoint}")
+	private String url;
+
 	@Test
 	void listarTest() {
 
 		client.get()
-				.uri("api/v2/productos")
+				.uri(url)
 				.accept(MediaType.APPLICATION_JSON)
 				.exchange()
 				.expectStatus().isOk()
@@ -52,7 +59,7 @@ class SpringBootWebfluxApirestApplicationTests {
 		Producto producto = service.findByNombre("Apple iPod").block();
 
 		client.get()
-				.uri("api/v2/productos/{id}", Collections.singletonMap("id", producto.getId()))
+				.uri(url.concat("/{id}"), Collections.singletonMap("id", producto.getId()))
 				.accept(MediaType.APPLICATION_JSON)
 				.exchange()
 				.expectStatus().isOk()
@@ -74,7 +81,7 @@ class SpringBootWebfluxApirestApplicationTests {
 	void crearTest(){
 		Categoria categoria = service.findByNombreCategoria("Muebles").block();
 		Producto producto = new Producto("prueba test crear", 2933.43, categoria);
-		client.post().uri("api/v2/productos")
+		client.post().uri(url)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON)
 				.body(Mono.just(producto), Producto.class)
@@ -93,7 +100,7 @@ class SpringBootWebfluxApirestApplicationTests {
 	void crearForma2Test(){
 		Categoria categoria = service.findByNombreCategoria("Muebles").block();
 		Producto producto = new Producto("hola", 2933.43, categoria);
-		client.post().uri("api/v2/productos")
+		client.post().uri(url)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON)
 				.body(Mono.just(producto), Producto.class)
@@ -111,13 +118,13 @@ class SpringBootWebfluxApirestApplicationTests {
 	}
 
 	@Test
-	void editTest(){
+	void editarTest(){
 		Producto producto = service.findByNombre("Apple iPod").block();
 		Categoria categoria = service.findByNombreCategoria("Muebles").block();
 		Producto productoEditado = new Producto("holaEditado", 2933.43, categoria);
 
 		client.put()
-				.uri("api/v2/productos/{id}", Collections.singletonMap("id", producto.getId()))
+				.uri(url.concat("/{id}"), Collections.singletonMap("id", producto.getId()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON)
 				.body(Mono.just(productoEditado), Producto.class)
@@ -134,14 +141,14 @@ class SpringBootWebfluxApirestApplicationTests {
 	void eliminarTest(){
 		Producto producto = service.findByNombre("Sony Camara HD Digital").block();
 		client.delete()
-				.uri("api/v2/productos/{id}", Collections.singletonMap("id", producto.getId()))
+				.uri(url.concat("/{id}"), Collections.singletonMap("id", producto.getId()))
 				.exchange()
 				.expectStatus().isNoContent()
 				.expectBody()
 				.isEmpty();
 
 		client.get()
-				.uri("api/v2/productos/{id}", Collections.singletonMap("id", producto.getId()))
+				.uri(url.concat("/{id}"), Collections.singletonMap("id", producto.getId()))
 				.exchange()
 				.expectStatus().isNotFound()
 				.expectBody()
