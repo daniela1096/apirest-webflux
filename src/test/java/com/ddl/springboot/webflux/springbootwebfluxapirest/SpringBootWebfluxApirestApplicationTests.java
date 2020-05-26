@@ -19,9 +19,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.util.Collections;
 import java.util.List;
 
-//@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureWebTestClient
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+//@AutoConfigureWebTestClient
+//@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SpringBootWebfluxApirestApplicationTests {
 
 	@Autowired
@@ -56,7 +56,7 @@ class SpringBootWebfluxApirestApplicationTests {
 	@Test
 	void verTest() {
 
-		Producto producto = service.findByNombre("Apple iPod").block();
+		Producto producto = service.findByNombre("Sony Notebook").block();
 
 		client.get()
 				.uri(url.concat("/{id}"), Collections.singletonMap("id", producto.getId()))
@@ -67,7 +67,7 @@ class SpringBootWebfluxApirestApplicationTests {
 				.expectBody(Producto.class)
 				.consumeWith(response -> {
 							Producto prod = response.getResponseBody();
-							assertThat(prod.getNombre(), is(equalTo("Apple iPod")));
+							assertThat(prod.getNombre(), is(equalTo("Sony Notebook")));
 							assertThat(prod.getId(), is(notNullValue()));
 						});
 
